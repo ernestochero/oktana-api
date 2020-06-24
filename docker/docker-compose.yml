@@ -1,0 +1,14 @@
+version: '3'
+services:
+  database:
+    image: 'mongo'
+    container_name: 'oktana-db'
+    environment:
+      - MONGO_INITDB_DATABASE=oktana
+      - MONGO_INITDB_ROOT_USERNAME=oktana_username
+      - MONGO_INITDB_ROOT_PASSWORD=oktana_password
+    volumes:
+    - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    - ./data:/data/db
+    ports:
+    - '27017-27019:27017-27019'
