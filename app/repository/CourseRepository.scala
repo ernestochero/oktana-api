@@ -19,7 +19,7 @@ case class CourseRepository(collection: MongoCollection[Course])(
       }
       .map(_.headOption)
   }
-  private def registerCourse(course: Course): Future[Course] =
+  def registerCourse(course: Course): Future[Course] =
     collection
       .insertOne(course)
       .toFuture()

@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject._
-import models.Student
+import models.{Course, Student}
 import play.api.mvc._
 import play.api.libs.json._
 import commons.Implicits._
@@ -28,8 +28,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
     Ok(views.html.index())
   }
 
-  def createCourse: Action[AnyContent] = Action {
-    Ok("createCourse")
+  def createCourse: Action[AnyContent] = Action.async { request =>
+    val json = request.body.asJson
+    json.fold(
+      Future.successful(InternalServerError("Impossible to parse body"))
+    )(json => {
+      service.OktanaService
+        .registerCourse(json.as[Course])
+        .map(c => Ok(Json.toJson(c)))
+        .recoverWith(ex => errorHandler(ex))
+    })
   }
 
   def searchCourse(id: String): Action[AnyContent] = Action.async {
@@ -39,8 +47,16 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
       .recoverWith(ex => errorHandler(ex))
   }
 
-  def createStudent(student: Student): Action[AnyContent] = Action {
-    Ok("student created")
+  def createStudent: Action[AnyContent] = Action.async { request =>
+    val json = request.body.asJson
+    json.fold(
+      Future.successful(InternalServerError("Impossible to parse body"))
+    )(json => {
+      service.OktanaService
+        .registerStudent(json.as[Student])
+        .map(c => Ok(Json.toJson(c)))
+        .recoverWith(ex => errorHandler(ex))
+    })
   }
 
   def errorHandler(ex: Throwable): Future[Result] = ex match {
@@ -48,6 +64,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
       Future.successful(
         InternalServerError(s"An error occurred : ${oktanaEx.message}")
       )
+    case _ =>
+      Future.successful(InternalServerError(s"An error occurred"))
   }
 
   def searchStudent(id: String): Action[AnyContent] = Action.async { _ =>

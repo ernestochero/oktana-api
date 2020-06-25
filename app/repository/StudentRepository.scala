@@ -9,7 +9,6 @@ case class StudentRepository(collection: MongoCollection[Student])(
   implicit ec: ExecutionContext
 ) extends Repository[Student] {
   def getUserByDocument(document: String): Future[Option[Student]] = {
-    println(s"document : $document")
     collection
       .find(Document("document" -> document))
       .toFuture()
