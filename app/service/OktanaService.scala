@@ -1,20 +1,22 @@
 package service
 
-import models.{
-  Course,
-  OktanaFailedResponse,
-  OktanaCourseSuccessResponse,
-  OktanaStudentSuccessResponse,
-  OktanaResponse,
-  Student
-}
-
+import models._
 import scala.concurrent.Future
 import repository._
 import commons.Implicits._
-import models.OktanaException.OktanaAPIException
 import mongo.Mongo.{courseCollection, studentCollection}
+import OktanaMessages._
+trait OktanaServiceOperation {
+  def getStudent(document: String): Future[OktanaResponse]
+  def getCourse(id: String): Future[OktanaResponse]
+  def registerStudent(student: Student): Future[OktanaResponse]
+  def registerCourse(course: Course): Future[OktanaResponse]
+}
 object OktanaService {
+  private val oktanaService = new OktanaService()
+  def apply(): OktanaService = oktanaService
+}
+class OktanaService extends OktanaServiceOperation {
   private val studentRepository: StudentRepository = StudentRepository(
     studentCollection
   )
@@ -34,7 +36,9 @@ object OktanaService {
           )
         case None =>
           Future.successful(
-            OktanaFailedResponse(responseMessage = "Student Not Found")
+            OktanaFailedResponse(
+              responseMessage = notFoundMessage(s"student $document")
+            )
           )
       }
   }
@@ -45,7 +49,7 @@ object OktanaService {
         case Some(s) =>
           Future.successful(
             OktanaFailedResponse(
-              responseMessage = s"Student ${s.document} already exist"
+              responseMessage = alreadyExists(s"Student ${s.document}")
             )
           )
         case None =>
@@ -54,7 +58,7 @@ object OktanaService {
             .map(
               _ =>
                 OktanaStudentSuccessResponse(
-                  responseMessage = "Student added successfully",
+                  responseMessage = addedSuccessfullyMessage("Student"),
                   student = student
               )
             )
@@ -73,7 +77,9 @@ object OktanaService {
           )
         case None =>
           Future.successful(
-            OktanaFailedResponse(responseMessage = "Course Not Found")
+            OktanaFailedResponse(
+              responseMessage = notFoundMessage(s"Course $id")
+            )
           )
       }
   }
@@ -83,7 +89,7 @@ object OktanaService {
       case Some(c) =>
         Future.successful(
           OktanaFailedResponse(
-            responseMessage = s"Course ${c.courseId} already exist"
+            responseMessage = alreadyExists(s"Course ${c.courseId}")
           )
         )
       case None =>
@@ -92,7 +98,7 @@ object OktanaService {
           .map(
             _ =>
               OktanaCourseSuccessResponse(
-                responseMessage = "Course added successfully",
+                responseMessage = addedSuccessfullyMessage("Course"),
                 course = course
             )
           )

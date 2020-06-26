@@ -6,6 +6,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import commons.Implicits._
 import models.OktanaException.OktanaAPIException
+import service.OktanaService
 
 import scala.concurrent.Future
 
@@ -33,7 +34,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
     json.fold(
       Future.successful(InternalServerError("Impossible to parse body"))
     )(json => {
-      service.OktanaService
+      OktanaService()
         .registerCourse(json.as[Course])
         .map(c => Ok(Json.toJson(c)))
         .recoverWith(ex => errorHandler(ex))
@@ -41,7 +42,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
   }
 
   def searchCourse(id: String): Action[AnyContent] = Action.async {
-    service.OktanaService
+    OktanaService()
       .getCourse(id)
       .map(c => Ok(Json.toJson(c)))
       .recoverWith(ex => errorHandler(ex))
@@ -52,7 +53,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
     json.fold(
       Future.successful(InternalServerError("Impossible to parse body"))
     )(json => {
-      service.OktanaService
+      OktanaService()
         .registerStudent(json.as[Student])
         .map(c => Ok(Json.toJson(c)))
         .recoverWith(ex => errorHandler(ex))
@@ -69,7 +70,7 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
   }
 
   def searchStudent(id: String): Action[AnyContent] = Action.async { _ =>
-    service.OktanaService
+    OktanaService()
       .getStudent(id)
       .map(st => Ok(Json.toJson(st)))
       .recoverWith(ex => errorHandler(ex))

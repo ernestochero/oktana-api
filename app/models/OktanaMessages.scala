@@ -28,3 +28,10 @@ case class OktanaCourseSuccessResponse(responseCode: String = "01",
 case class OktanaFailedResponse(responseCode: String = "05",
                                 responseMessage: String)
     extends OktanaResponse
+
+object OktanaMessages {
+  val notFoundMessage: String => String = (data: String) => s"$data not found"
+  val addedSuccessfullyMessage: String => String = (data: String) =>
+    s"$data added successfully"
+  val alreadyExists: String => String = (data: String) => s"$data already exist"
+}
