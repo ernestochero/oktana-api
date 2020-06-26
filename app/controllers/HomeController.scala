@@ -41,9 +41,9 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
     })
   }
 
-  def searchCourse(id: String): Action[AnyContent] = Action.async {
+  def searchCourse(courseId: String): Action[AnyContent] = Action.async {
     OktanaService()
-      .getCourse(id)
+      .getCourse(courseId)
       .map(c => Ok(Json.toJson(c)))
       .recoverWith(ex => errorHandler(ex))
   }
@@ -69,9 +69,9 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
       Future.successful(InternalServerError(s"An error occurred"))
   }
 
-  def searchStudent(id: String): Action[AnyContent] = Action.async { _ =>
+  def searchStudent(document: String): Action[AnyContent] = Action.async { _ =>
     OktanaService()
-      .getStudent(id)
+      .getStudent(document)
       .map(st => Ok(Json.toJson(st)))
       .recoverWith(ex => errorHandler(ex))
   }

@@ -6,8 +6,8 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 
-GET    /api/student/:id                  controllers.HomeController.searchStudent(id)
-GET    /api/course/:id                   controllers.HomeController.searchCourse(id)
+GET    /api/student/:document                  controllers.HomeController.searchStudent(document)
+GET    /api/course/:courseId                   controllers.HomeController.searchCourse(courseId)
 POST   /api/course               controllers.HomeController.createCourse
 POST  /api/student               controllers.HomeController.createStudent
 

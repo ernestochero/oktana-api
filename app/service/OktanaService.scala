@@ -64,9 +64,9 @@ class OktanaService extends OktanaServiceOperation {
             )
       }
 
-  def getCourse(id: String): Future[OktanaResponse] = {
+  def getCourse(courseId: String): Future[OktanaResponse] = {
     courseRepository
-      .getCourseById(id)
+      .getCourseById(courseId)
       .flatMap {
         case Some(course) =>
           Future.successful(
@@ -78,7 +78,7 @@ class OktanaService extends OktanaServiceOperation {
         case None =>
           Future.successful(
             OktanaFailedResponse(
-              responseMessage = notFoundMessage(s"Course $id")
+              responseMessage = notFoundMessage(s"Course $courseId")
             )
           )
       }
