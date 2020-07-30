@@ -1,11 +1,11 @@
 package controllers
 
 import javax.inject._
-import models.{Course, Student}
+import models.{Course, EcommerceGuest, EmailOnly, Member, Student}
 import play.api.mvc._
 import play.api.libs.json._
 import commons.Implicits._
-import models.OktanaException.OktanaAPIException
+import models.OktanaException.{OktanaAPIException, S3UploadApiException}
 import service.OktanaService
 
 import scala.concurrent.Future
@@ -48,6 +48,40 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
       .recoverWith(ex => errorHandler(ex))
   }
 
+  def evaluateMember(members: List[Option[Member]]): Option[Member] =
+    members.find(_.isDefined).flatten
+
+  def createMember: Action[AnyContent] = Action.async { request =>
+    val json = request.body.asJson
+    json.fold(
+      Future.successful(InternalServerError("Impossible to parse body"))
+    )(json => {
+      val emailOnly = json.asOpt[EmailOnly]
+      val ecommerceGuest = json.asOpt[EcommerceGuest]
+      val members = List(emailOnly, ecommerceGuest)
+      val foundMember = evaluateMember(members)
+      val memberF = foundMember.fold[Future[Result]](
+        Future.failed(OktanaAPIException("Member not found"))
+      ) {
+        case em: EmailOnly =>
+          println("this is email Only")
+          //TODO: execute code when the object is EmailOnly
+          uploadToS3(em).map(Ok(_))
+
+        case ecm: EcommerceGuest =>
+          println("this is ecommerce Guest")
+          //TODO: execute code when the object is EcommerceGuest
+          uploadToS3(ecm).map(Ok(_))
+      }
+      memberF
+        .recoverWith(ex => errorHandler(ex))
+    })
+  }
+  def uploadToS3(member: Member): Future[String] = {
+    //call to s3 which might throw an exception
+    Future.failed(S3UploadApiException("error from s3"))
+  }
+
   def createStudent: Action[AnyContent] = Action.async { request =>
     val json = request.body.asJson
     json.fold(
@@ -65,6 +99,8 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents)
       Future.successful(
         InternalServerError(s"An error occurred : ${oktanaEx.message}")
       )
+    case ex: S3UploadApiException =>
+      Future.successful(InternalServerError(s"Error to upload from S3"))
     case _ =>
       Future.successful(InternalServerError(s"An error occurred"))
   }

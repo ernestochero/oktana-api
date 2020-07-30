@@ -4,7 +4,6 @@ organization := "com.ernestochero"
 version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
-val circeVersion = "0.13.0"
 val mongoDriverVersion = "2.9.0"
 val playVersion = "2.8.1"
 val mockitoVersion = "1.14.8"
